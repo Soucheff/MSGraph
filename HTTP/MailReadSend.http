@@ -1,0 +1,53 @@
+### Limit Access 
+### https://learn.microsoft.com/en-us/graph/auth-limit-mailbox-access?context=graph%2Fapi%2F1.0&view=graph-rest-1.0
+
+### Client Credencials Flow
+### https://learn.microsoft.com/en-us/graph/auth-v2-service?view=graph-rest-1.0
+
+@tenant = 
+@clientId = 
+@clientSecret = 
+@upn = 
+@mail_subject = 
+@mail_msg = 
+@mail_to = 
+
+#### Get Access Token
+# @name GetAT
+POST https://login.microsoftonline.com/{{tenant}}/oauth2/v2.0/token HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+
+client_id={{clientId}}
+&scope=https%3A%2F%2Fgraph.microsoft.com%2F.default
+&client_secret={{clientSecret}}
+&grant_type=client_credentials
+
+###Get Messages
+@at = {{GetAT.response.body.access_token}}
+GET https://graph.microsoft.com/v1.0/users/{{upn}}/messages?$select=sender,subject
+authorization: Bearer {{at}}
+
+
+### Send Mail
+### https://learn.microsoft.com/en-us/graph/api/user-sendmail?view=graph-rest-1.0&tabs=http
+POST https://graph.microsoft.com/v1.0/users/{{upn}}/sendMail
+authorization: Bearer {{at}}
+Content-type: application/json
+
+{
+  "message": {
+    "subject": "{{mail_subject}}",
+    "body": {
+      "contentType": "Text",
+      "content": "{{mail_msg}}"
+    },
+    "toRecipients": [
+      {
+        "emailAddress": {
+          "address": "{{mail_to}}"
+        }
+      }
+    ]
+  },
+  "saveToSentItems": "true"
+}
